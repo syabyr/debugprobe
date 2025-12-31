@@ -30,6 +30,9 @@
 #include "autobaud.h"
 
 #include "probe_config.h"
+#ifdef PROBE_WS2812_SUPPORT
+#include "ws2812_control.h"
+#endif
 
 TaskHandle_t uart_taskhandle;
 TickType_t last_wake, interval = 100;
@@ -49,6 +52,11 @@ static volatile uint tx_led_debounce;
 
 #ifdef PROBE_UART_RX_LED
 static uint rx_led_debounce;
+#endif
+
+#ifdef PROBE_WS2812_SUPPORT
+static uint ws2812_tx_debounce;
+static uint ws2812_rx_debounce;
 #endif
 
 static BaudInfo_t baud_info;
@@ -117,6 +125,10 @@ bool cdc_task(void)
           gpio_put(PROBE_UART_RX_LED, 1);
           rx_led_debounce = debounce_ticks;
 #endif
+#ifdef PROBE_WS2812_SUPPORT
+          ws2812_set_state(WS2812_STATE_UART_RX, true);
+          ws2812_rx_debounce = debounce_ticks;
+#endif
           written = MIN(tud_cdc_write_available(), rx_len);
           if (rx_len > written)
               cdc_tx_oe++;
@@ -132,6 +144,12 @@ bool cdc_task(void)
           else
             gpio_put(PROBE_UART_RX_LED, 0);
 #endif
+#ifdef PROBE_WS2812_SUPPORT
+          if (ws2812_rx_debounce)
+            ws2812_rx_debounce--;
+          else
+            ws2812_set_state(WS2812_STATE_UART_RX, false);
+#endif
         }
 
       /* Reading from a firehose and writing to a FIFO. */
@@ -141,6 +159,10 @@ bool cdc_task(void)
 #ifdef PROBE_UART_TX_LED
         gpio_put(PROBE_UART_TX_LED, 1);
         tx_led_debounce = debounce_ticks;
+#endif
+#ifdef PROBE_WS2812_SUPPORT
+        ws2812_set_state(WS2812_STATE_UART_TX, true);
+        ws2812_tx_debounce = debounce_ticks;
 #endif
         /* Batch up to half a FIFO of data - don't clog up on RX */
         watermark = MIN(watermark, 16);
@@ -152,6 +174,12 @@ bool cdc_task(void)
             tx_led_debounce--;
           else
             gpio_put(PROBE_UART_TX_LED, 0);
+#endif
+#ifdef PROBE_WS2812_SUPPORT
+          if (ws2812_tx_debounce)
+            ws2812_tx_debounce--;
+          else
+            ws2812_set_state(WS2812_STATE_UART_TX, false);
 #endif
       }
       /* Pending break handling */

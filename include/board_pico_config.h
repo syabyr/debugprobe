@@ -45,6 +45,10 @@
 
 #define PROBE_USB_CONNECTED_LED 25
 
+// WS2812 LED support - GP16
+#define WS2812_GPIO 16
+#define PROBE_WS2812_SUPPORT
+
 #define PROBE_PRODUCT_STRING "Debugprobe on Pico (CMSIS-DAP)"
 
 #endif

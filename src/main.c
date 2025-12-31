@@ -46,6 +46,9 @@
 #include "tusb_edpt_handler.h"
 #include "DAP.h"
 #include "hardware/structs/usb.h"
+#ifdef PROBE_WS2812_SUPPORT
+#include "ws2812_control.h"
+#endif
 
 // UART0 for debugprobe debug
 // UART1 for debugprobe to target device
@@ -117,6 +120,9 @@ void usb_thread(void *ptr)
 #endif
     TickType_t wake;
     wake = xTaskGetTickCount();
+#ifdef PROBE_WS2812_SUPPORT
+    bool last_usb_ready = false;
+#endif
     do {
         tud_task();
 #ifdef PROBE_USB_CONNECTED_LED
@@ -124,6 +130,13 @@ void usb_thread(void *ptr)
             gpio_put(PROBE_USB_CONNECTED_LED, 1);
         else
             gpio_put(PROBE_USB_CONNECTED_LED, 0);
+#endif
+#ifdef PROBE_WS2812_SUPPORT
+        bool usb_ready = tud_ready();
+        if (usb_ready != last_usb_ready) {
+            last_usb_ready = usb_ready;
+            ws2812_set_state(WS2812_STATE_USB_CONNECTED, usb_ready);
+        }
 #endif
         // implied bus-reset detection
         if (!tud_connected() && was_configured)
@@ -153,6 +166,10 @@ int main(void) {
     cdc_uart_init();
     tusb_init();
     stdio_uart_init();
+
+#ifdef PROBE_WS2812_SUPPORT
+    ws2812_init();
+#endif
 
     DAP_Setup();
 
