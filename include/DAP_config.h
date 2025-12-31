@@ -50,6 +50,9 @@ This information includes:
 #include "cmsis_compiler.h"
 #include "probe_config.h"
 #include "probe.h"
+#ifdef PROBE_WS2812_SUPPORT
+#include "ws2812_control.h"
+#endif
 
 /// Processor Clock of the Cortex-M MCU used in the Debug Unit.
 /// This value is used to calculate the SWD/JTAG clock speed.
@@ -321,6 +324,9 @@ extern volatile uint32_t cached_delay;
 __STATIC_INLINE void PORT_SWD_SETUP (void) {
   probe_init();
   cached_delay = 0;
+#ifdef PROBE_WS2812_SUPPORT
+  ws2812_set_state(WS2812_STATE_DAP_CONNECTED, true);
+#endif
 }
 
 /** Disable JTAG/SWD I/O Pins.
@@ -329,6 +335,10 @@ Disables the DAP Hardware I/O pins which configures:
 */
 __STATIC_INLINE void PORT_OFF (void) {
   probe_deinit();
+#ifdef PROBE_WS2812_SUPPORT
+  ws2812_set_state(WS2812_STATE_DAP_CONNECTED, false);
+  ws2812_set_state(WS2812_STATE_DAP_RUNNING, false);
+#endif
 }
 
 

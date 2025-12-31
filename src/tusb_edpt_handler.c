@@ -6,8 +6,11 @@
 
 #include "tusb_edpt_handler.h"
 #include "DAP.h"
+#include "probe_config.h"
 #include "semphr.h"
-
+#ifdef PROBE_WS2812_SUPPORT
+#include "ws2812_control.h"
+#endif
 
 static uint8_t itf_num;
 static uint8_t _rhport;
@@ -246,7 +249,20 @@ void dap_thread(void *ptr)
 			}
 			xSemaphoreGive(edpt_spoon);
 
+#ifdef PROBE_WS2812_SUPPORT
+			// Only show running state for transfer commands (ID_DAP_Transfer = 0x05, ID_DAP_TransferBlock = 0x06)
+			uint8_t cmd_id = *RD_SLOT_PTR(USBRequestBuffer);
+			bool is_transfer = (cmd_id == 0x05 || cmd_id == 0x06);
+			if (is_transfer) {
+				ws2812_set_state(WS2812_STATE_DAP_RUNNING, true);
+			}
+#endif
 			resp_len = DAP_ExecuteCommand(RD_SLOT_PTR(USBRequestBuffer), WR_SLOT_PTR(USBResponseBuffer)) & 0xffff;
+#ifdef PROBE_WS2812_SUPPORT
+			if (is_transfer) {
+				ws2812_set_state(WS2812_STATE_DAP_RUNNING, false);
+			}
+#endif
 			USBRequestBuffer.rptr++;
 			probe_info("%lu %lu DAP resp %s len %u\n",
 					   USBResponseBuffer.wptr, USBResponseBuffer.rptr,
