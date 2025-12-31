@@ -34,18 +34,18 @@ void ws2812_update(void);
 #define WS2812_COLOR_OFF           0x000000
 
 // USB states (GRB: Green-Red-Blue)
-#define WS2812_COLOR_USB_DISCONNECTED  0x001000  // Dim Red - USB not ready
-#define WS2812_COLOR_USB_CONNECTED     0x100000  // Dim Green - USB ready
+#define WS2812_COLOR_USB_DISCONNECTED  0x000800  // Dim Red (G=0, R=8, B=0)
+#define WS2812_COLOR_USB_CONNECTED     0x080000  // Dim Green (G=8, R=0, B=0)
 
-// DAP states
-#define WS2812_COLOR_DAP_CONNECTED     0xFF0000  // Bright Green - DAP connected
-#define WS2812_COLOR_DAP_RUNNING       0x0000FF  // Blue - Target running
+// DAP states - not used currently
+#define WS2812_COLOR_DAP_CONNECTED     0x400000  // Medium Green (G=64, R=0, B=0)
+#define WS2812_COLOR_DAP_RUNNING       0x000040  // Medium Blue (G=0, R=0, B=64)
 
 // UART activity
-#define WS2812_COLOR_UART_TX           0x80FF00  // Yellow - UART TX (Green + Red)
-#define WS2812_COLOR_UART_RX           0xFF00FF  // Cyan - UART RX (Green + Blue)
+#define WS2812_COLOR_UART_TX           0x101000  // Yellow (G=16, R=16, B=0)
+#define WS2812_COLOR_UART_RX           0x100010  // Cyan (G=16, R=0, B=16)
 
 // Combined states
-#define WS2812_COLOR_UART_TXRX         0x00FFFF  // Magenta - UART TX+RX (Red + Blue)
+#define WS2812_COLOR_UART_TXRX         0x001010  // Magenta (G=0, R=16, B=16)
 
 #endif // WS2812_CONTROL_H

@@ -5,7 +5,8 @@
 #include "probe_config.h"
 #include "ws2812_control.h"
 
-static PIO ws2812_pio = pio0;
+// Use pio1 to avoid conflict with probe.c which uses pio0
+static PIO ws2812_pio = pio1;
 static uint ws2812_sm = 0;
 static bool ws2812_initialized = false;
 
